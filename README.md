@@ -15,4 +15,5 @@ developed as part of the COMP20081 Systems Software coursework.
 - SQLite
 
 **Status**
-/n Day 1 – Project setup and environment validation
+
+Day 1 – Project setup and environment validation
