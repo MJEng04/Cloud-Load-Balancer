@@ -1,14 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.javafxapplication1.models;
 
-/**
- *
- * @author marti
- */
-public class fileoperation {
+// Represents file operations (upload/download)
+public class FileOperation {
     private int id;
     private String username;
     private String filename;
@@ -16,8 +9,8 @@ public class fileoperation {
     private String status;    // either "waiting", "running", "completed"
     private long timestamp;
     
-    // constructor
-    public fileoperation (int id, String username, String filename, String operation){
+    // Constructor
+    public FileOperation (int id, String username, String filename, String operation){
         this.id = id;
         this.username = username;
         this.filename = filename;
@@ -55,10 +48,10 @@ public class fileoperation {
         return timestamp;
     }
     
-    // toString for debugging
+    // Makes object output readable 
     @Override
     public String toString() {
-        return "fileoperation{" +
+        return "FileOperation{" +
                 "id=" + id +
                 ", user='" + username + '\'' +
                 ", file='" + filename + '\'' +
