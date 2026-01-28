@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.javafxapplication1.FileManagementController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    
+    <children>
+        <!-- Header -->
+        <Label text="File Management System" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+        
+        <!-- User Information -->
+        <HBox spacing="10.0" alignment="CENTER">
+            <Label text="Welcome:" />
+            <TextField fx:id="usernameField" editable="false" prefWidth="150.0" />
+        </HBox>
+        
+        <!-- Operation Buttons -->
+        <HBox spacing="10.0" alignment="CENTER">
+            <Button fx:id="uploadBtn" text="Upload File" onAction="#handleUpload" prefWidth="120.0" />
+            <Button fx:id="downloadBtn" text="Download File" onAction="#handleDownload" prefWidth="120.0" />
+            <Button fx:id="deleteBtn" text="Delete File" onAction="#handleDelete" prefWidth="120.0" />
+        </HBox>
+        
+        <!-- Files Table -->
+        <TableView fx:id="filesTable" prefHeight="300.0" prefWidth="600.0">
+            <columns>
+                <TableColumn fx:id="filenameCol" text="Filename" prefWidth="200.0" />
+                <TableColumn fx:id="sizeCol" text="Size" prefWidth="100.0" />
+                <TableColumn fx:id="chunksCol" text="Chunks" prefWidth="80.0" />
+                <TableColumn fx:id="dateCol" text="Upload Date" prefWidth="150.0" />
+                <TableColumn fx:id="storageCol" text="Storage" prefWidth="100.0" />
+            </columns>
+        </TableView>
+        
+        <!-- Status Bar -->
+        <Label fx:id="statusLabel" text="Ready" style="-fx-text-fill: green;" />
+        
+        <!-- Progress Bar -->
+        <ProgressBar fx:id="progressBar" prefWidth="600.0" progress="0.0" />
+        
+        <!-- Bottom Buttons -->
+        <HBox spacing="10.0" alignment="CENTER">
+            <Button fx:id="refreshBtn" text="Refresh List" onAction="#handleRefresh" />
+            <Button fx:id="logoutBtn" text="Logout" onAction="#handleLogout" />
+        </HBox>
+    </children>
+</VBox>
