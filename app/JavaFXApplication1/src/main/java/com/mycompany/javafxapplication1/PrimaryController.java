@@ -66,18 +66,24 @@ public class PrimaryController {
         Stage primaryStage = (Stage) registerBtn.getScene().getWindow();
         try {
             DB myObj = new DB();
-            String[] credentials = {userTextField.getText(), passPasswordField.getText()};
-            if(myObj.validateUser(userTextField.getText(), passPasswordField.getText())){
+            String username = userTextField.getText();
+            String password = passPasswordField.getText();
+            
+            // Login Validation
+            if(myObj.validateUser(username, password)){
+                // Loads file management screen
                 FXMLLoader loader = new FXMLLoader();
-                loader.setLocation(getClass().getResource("secondary.fxml"));
+                loader.setLocation(getClass().getResource("filemanagement.fxml"));
                 Parent root = loader.load();
-                Scene scene = new Scene(root, 640, 480);
+                
+                // Retrieves controller and sets username
+                FileManagementController controller = loader.getController();
+                controller.setUsername(username);
+                
+                // Shows file management screen
+                Scene scene = new Scene(root, 800, 600);
                 secondaryStage.setScene(scene);
-                SecondaryController controller = loader.getController();
-                controller.initialise(credentials);
-                secondaryStage.setTitle("Show Users");
-                String msg="some data sent from Primary Controller";
-                secondaryStage.setUserData(msg);
+                secondaryStage.setTitle("File Management - " + username);
                 secondaryStage.show();
                 primaryStage.close();
             }
