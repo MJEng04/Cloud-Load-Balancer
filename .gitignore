@@ -25,3 +25,5 @@ replay_pid*
 /app/JavaFXApplication1/target/
 /app/DaBalancerCWK/target/
 /app/n1264601cwk/target/
+*.txt
+*.dat
