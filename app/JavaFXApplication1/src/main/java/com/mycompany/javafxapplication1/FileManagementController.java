@@ -4,6 +4,7 @@ import com.mycompany.javafxapplication1.models.FileChunk;
 import com.mycompany.javafxapplication1.models.FileInfo;
 import com.mycompany.javafxapplication1.services.FileManager;
 import com.mycompany.javafxapplication1.services.LoadBalancer;
+import com.mycompany.javafxapplication1.database.FileDAO;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -64,14 +65,16 @@ public class FileManagementController {
     // Services
     private FileManager fileManager;
     private LoadBalancer loadBalancer;
+    private FileDAO fileDAO;  
     private String currentUsername;
-    private int nextFileId = 1; // Counter for file IDs
+   
     
     // Initialises when controller loads
     public void initialize() {
         // Creates services
         fileManager = new FileManager();
         loadBalancer = new LoadBalancer();
+        fileDAO = new FileDAO();  // 
         
         // Set table columns
         filenameCol.setCellValueFactory(new PropertyValueFactory<>("filename"));
@@ -89,7 +92,7 @@ public class FileManagementController {
     public void setUsername(String username) {
         this.currentUsername = username;
         usernameField.setText(username);
-        loadUserFiles();
+        loadUserFiles(); 
     }
     
     // Operation - Upload
@@ -103,32 +106,60 @@ public class FileManagementController {
             File selectedFile = fileChooser.showOpenDialog(stage);
             
             if (selectedFile == null) {
-                return; // User cancelled
+                return;
             }
             
             statusLabel.setText("Uploading: " + selectedFile.getName());
-            progressBar.setProgress(0.3);
+            progressBar.setProgress(0.2);
             
-            // Chunks the file
+            // Saves to database to get file ID
+            System.out.println("Saving file info to database");
+            int fileId = fileDAO.saveFile(
+                selectedFile.getName(), 
+                selectedFile.length(), 
+                0,
+                currentUsername
+            );
+            
+            if (fileId == -1) {
+                throw new Exception("Failed to save file to database");
+            }
+            
+            progressBar.setProgress(0.4);
+            
+            // Chunks file using database ID
             System.out.println("Chunking file: " + selectedFile.getName());
-            List<FileChunk> chunks = fileManager.chunkFile(selectedFile, nextFileId);
-            progressBar.setProgress(0.5);
+            List<FileChunk> chunks = fileManager.chunkFile(selectedFile, fileId);
+            
+            // Update database with total chunks
+            fileDAO.updateTotalChunks(fileId, chunks.size());
+            
+            progressBar.setProgress(0.6);
             
             // Uses load balancer to pick storage
             String storage = loadBalancer.getNextStorage();
             System.out.println("Selected storage: " + storage);
             
-            // Saves chunks
+            // Saves chunks to disk
             fileManager.saveChunks(chunks, storage);
             progressBar.setProgress(0.8);
             
-            // Adds to table
-            String fileSize = formatFileSize(selectedFile.length());
-            String uploadDate = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
-            FileInfo fileInfo = new FileInfo(nextFileId, selectedFile.getName(), fileSize, chunks.size(), uploadDate, storage);
-            filesTable.getItems().add(fileInfo);
+            // Save chunk info to database
+            for (FileChunk chunk : chunks) {
+                fileDAO.saveChunk(
+                    fileId,
+                    chunk.getChunkNumber(),
+                    storage,
+                    chunk.getChecksum(),
+                    chunk.getSize()
+                );
+            }
             
-            nextFileId++;
+            progressBar.setProgress(0.9);
+            
+            // Reloads file list from database
+            loadUserFiles();
+            
             progressBar.setProgress(1.0);
             statusLabel.setText("Upload complete: " + selectedFile.getName());
             
@@ -143,7 +174,10 @@ public class FileManagementController {
             new Thread(() -> {
                 try {
                     Thread.sleep(2000);
-                    javafx.application.Platform.runLater(() -> progressBar.setProgress(0.0));
+                    javafx.application.Platform.runLater(() -> {
+                        progressBar.setProgress(0.0);
+                        statusLabel.setText("Ready");
+                    });
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -165,10 +199,22 @@ public class FileManagementController {
             statusLabel.setText("Downloading: " + selected.getFilename());
             progressBar.setProgress(0.3);
             
+            // Retrieves chunk info from database
+            List<FileDAO.ChunkInfo> chunkInfos = fileDAO.getFileChunks(selected.getId());
+            
+            if (chunkInfos.isEmpty()) {
+                throw new Exception("No chunks found in database for this file");
+            }
+            
+            // Find which storage has the chunks
+            String storage = chunkInfos.get(0).storageLocation;
+            
+            progressBar.setProgress(0.5);
+            
             // Loads chunks from storage
-            System.out.println("Loading chunks from: " + selected.getStorageLocation());
-            List<FileChunk> chunks = fileManager.loadChunks(selected.getId(), selected.getTotalChunks(), selected.getStorageLocation());
-            progressBar.setProgress(0.6);
+            System.out.println("Loading chunks from: " + storage);
+            List<FileChunk> chunks = fileManager.loadChunks(selected.getId(), selected.getTotalChunks(), storage);
+            progressBar.setProgress(0.7);
             
             // Allows user choose where to save
             FileChooser fileChooser = new FileChooser();
@@ -180,7 +226,7 @@ public class FileManagementController {
             if (saveFile == null) {
                 statusLabel.setText("Download cancelled");
                 progressBar.setProgress(0.0);
-                return; // User cancelled
+                return;
             }
             
             // Reconstructs file
@@ -199,7 +245,10 @@ public class FileManagementController {
             new Thread(() -> {
                 try {
                     Thread.sleep(2000);
-                    javafx.application.Platform.runLater(() -> progressBar.setProgress(0.0));
+                    javafx.application.Platform.runLater(() -> {
+                        progressBar.setProgress(0.0);
+                        statusLabel.setText("Ready");
+                    });
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -224,12 +273,22 @@ public class FileManagementController {
         
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Removes from table
-            filesTable.getItems().remove(selected);
-            statusLabel.setText("Deleted: " + selected.getFilename());
-            
-            // TODO: Delete actual chunk files from storage folder
-            // TODO: Delete from database
+            try {
+                // Delete from database
+                fileDAO.deleteFile(selected.getId());
+                
+                // Reloads file list from database
+                loadUserFiles();
+                
+                statusLabel.setText("Deleted: " + selected.getFilename());
+                showAlert("Success", "File deleted successfully!", Alert.AlertType.INFORMATION);
+                
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+                statusLabel.setText("Delete failed!");
+                showAlert("Error", "Failed to delete file: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
         }
     }
     
@@ -259,10 +318,26 @@ public class FileManagementController {
         }
     }
     
-    // Load user files
+    // Load user files - from MySQL database
     private void loadUserFiles() {
-        // Keeps files in tables - need to switch to SQL later 
-        statusLabel.setText("Loaded files for: " + currentUsername);
+        try {
+            System.out.println("Loading files for user: " + currentUsername);
+            
+            // Retrieves files from database
+            List<FileInfo> files = fileDAO.getUserFiles(currentUsername);
+            
+            // Updates table with database data
+            ObservableList<FileInfo> fileList = FXCollections.observableArrayList(files);
+            filesTable.setItems(fileList);
+            
+            statusLabel.setText("Loaded " + files.size() + " file(s) for: " + currentUsername);
+            System.out.println("Successfully loaded " + files.size() + " files from database");
+            
+        } catch (Exception e) {
+            System.err.println("Error loading files: " + e.getMessage());
+            e.printStackTrace();
+            statusLabel.setText("Error loading files");
+        }
     }
     
     // Format file size: bytes -> KB/MB
