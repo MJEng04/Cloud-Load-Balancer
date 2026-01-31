@@ -62,6 +62,24 @@ public class FileDAO {
         }
     }
     
+    // Update total chunks for file
+    public void updateTotalChunks(int fileId, int totalChunks) {
+        String sql = "UPDATE files SET total_chunks = ? WHERE id = ?";
+
+        try (Connection conn = MySQLConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, totalChunks);
+            stmt.setInt(2, fileId);
+            stmt.executeUpdate();
+
+            System.out.println("Updated total chunks for file is" + fileId + ": " + totalChunks);
+
+        } catch (Exception e) {
+            System.err.println("Error updating chunks: " + e.getMessage());
+        }
+    }
+    
     // Retrieves files for user
     public List<FileInfo> getUserFiles(String username) {
         List<FileInfo> files = new ArrayList<>();
@@ -101,6 +119,154 @@ public class FileDAO {
         }
         
         return files;
+    }
+    
+    // Retrieves files shared with user
+    public List<FileInfo> getSharedFiles(String username) {
+        List<FileInfo> files = new ArrayList<>();
+        String sql = "SELECT f.id, f.filename, f.original_size, f.total_chunks, f.upload_date, " +
+                     "fp.can_read, fp.can_write, f.owner_username " +
+                     "FROM files f " +
+                     "JOIN file_permissions fp ON f.id = fp.file_id " +
+                     "WHERE fp.username = ? " +
+                     "ORDER BY f.upload_date DESC";
+        
+        try (Connection conn = MySQLConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String filename = rs.getString("filename");
+                long size = rs.getLong("original_size");
+                int chunks = rs.getInt("total_chunks");
+                Timestamp uploadDate = rs.getTimestamp("upload_date");
+                String owner = rs.getString("owner_username");
+                
+                String storage = getFileStorageLocation(id);
+                String sizeStr = formatFileSize(size);
+                String dateStr = uploadDate.toString().substring(0, 16);
+                
+                // Adds "Shared by: owner" information to filename
+                FileInfo fileInfo = new FileInfo(id, filename + " (by: " + owner + ")", sizeStr, chunks, dateStr, storage);
+                files.add(fileInfo);
+            }
+            
+            System.out.println("Loaded " + files.size() + " shared files for user: " + username);
+            
+        } catch (Exception e) {
+            System.err.println("Error loading shared files: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return files;
+    }
+    
+    
+    // Allows users to share file with other users
+    public boolean shareFile(int fileId, String username, boolean canRead, boolean canWrite) {
+        String sql = "INSERT INTO file_permissions (file_id, username, can_read, can_write) VALUES (?, ?, ?, ?) " +
+                     "ON DUPLICATE KEY UPDATE can_read = ?, can_write = ?";
+        
+        try (Connection conn = MySQLConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, fileId);
+            stmt.setString(2, username);
+            stmt.setBoolean(3, canRead);
+            stmt.setBoolean(4, canWrite);
+            stmt.setBoolean(5, canRead);
+            stmt.setBoolean(6, canWrite);
+            
+            stmt.executeUpdate();
+            System.out.println("File " + fileId + " shared with " + username + " (read: " + canRead + ", write: " + canWrite + ")");
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("Error sharing file: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+   
+    // Checks if user has permission to access file
+    public boolean canAccessFile(int fileId, String username) {
+        // Check if user owns the file
+        String ownerSql = "SELECT owner_username FROM files WHERE id = ?";
+        try (Connection conn = MySQLConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(ownerSql)) {
+            
+            stmt.setInt(1, fileId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next() && rs.getString("owner_username").equals(username)) {
+                return true; // Meaning owner has full access
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error checking ownership of file: " + e.getMessage());
+        }
+        
+        // Checks if user has shared access of file
+        String permSql = "SELECT can_read FROM file_permissions WHERE file_id = ? AND username = ?";
+        try (Connection conn = MySQLConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(permSql)) {
+            
+            stmt.setInt(1, fileId);
+            stmt.setString(2, username);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getBoolean("can_read");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error checking permissions: " + e.getMessage());
+        }
+        
+        return false; // No access to file
+    }
+    
+
+    // Checks if user can modify a file
+    public boolean canModifyFile(int fileId, String username) {
+        // Check if user owns the file
+        String ownerSql = "SELECT owner_username FROM files WHERE id = ?";
+        try (Connection conn = MySQLConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(ownerSql)) {
+            
+            stmt.setInt(1, fileId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next() && rs.getString("owner_username").equals(username)) {
+                return true; // Meaning owner can modify file 
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error checking ownership: " + e.getMessage());
+        }
+        
+        // Checks if user has write permission
+        String permSql = "SELECT can_write FROM file_permissions WHERE file_id = ? AND username = ?";
+        try (Connection conn = MySQLConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(permSql)) {
+            
+            stmt.setInt(1, fileId);
+            stmt.setString(2, username);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getBoolean("can_write");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error checking write permission: " + e.getMessage());
+        }
+        
+        return false; // Meaning no write access
     }
     
     // Retrieves storage location for file
@@ -192,22 +358,5 @@ public class FileDAO {
             this.checksum = checksum;
         }
     }
-    
-    // Update total chunks for file
-    public void updateTotalChunks(int fileId, int totalChunks) {
-        String sql = "UPDATE files SET total_chunks = ? WHERE id = ?";
-
-        try (Connection conn = MySQLConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, totalChunks);
-            stmt.setInt(2, fileId);
-            stmt.executeUpdate();
-
-            System.out.println("Updated total chunks for file is" + fileId + ": " + totalChunks);
-
-        } catch (Exception e) {
-            System.err.println("Error updating chunks: " + e.getMessage());
-        }
-    }
+   
 }
