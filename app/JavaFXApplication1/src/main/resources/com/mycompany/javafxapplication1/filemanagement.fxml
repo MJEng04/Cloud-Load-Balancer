@@ -26,6 +26,13 @@
             <Button fx:id="deleteBtn" text="Delete File" onAction="#handleDelete" prefWidth="120.0" />
         </HBox>
         
+        <HBox spacing="10.0" alignment="CENTER">
+            <Button fx:id="shareBtn" text="Share File" onAction="#handleShare" prefWidth="120.0" 
+                    style="-fx-background-color: #dc2626; -fx-text-fill: white;" />
+            <Button fx:id="viewSharedBtn" text="View Shared Files" onAction="#handleViewShared" prefWidth="150.0" 
+                    style="-fx-background-color: #f97316; -fx-text-fill: white;" />
+        </HBox>
+        
         <!-- Files Table -->
         <TableView fx:id="filesTable" prefHeight="300.0" prefWidth="600.0">
             <columns>

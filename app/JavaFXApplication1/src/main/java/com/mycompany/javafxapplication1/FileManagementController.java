@@ -5,16 +5,20 @@ import com.mycompany.javafxapplication1.models.FileInfo;
 import com.mycompany.javafxapplication1.services.FileManager;
 import com.mycompany.javafxapplication1.services.LoadBalancer;
 import com.mycompany.javafxapplication1.database.FileDAO;
+import com.mycompany.javafxapplication1.database.UserDAO;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
+import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -62,11 +66,19 @@ public class FileManagementController {
     @FXML
     private Button deleteBtn;
     
+    @FXML
+    private Button shareBtn; 
+    
+    @FXML
+    private Button viewSharedBtn;
+    
     // Services
     private FileManager fileManager;
     private LoadBalancer loadBalancer;
     private FileDAO fileDAO;  
+    private UserDAO userDAO;
     private String currentUsername;
+    private boolean viewingOwnFiles = true;
    
     
     // Initialises when controller loads
@@ -74,7 +86,8 @@ public class FileManagementController {
         // Creates services
         fileManager = new FileManager();
         loadBalancer = new LoadBalancer();
-        fileDAO = new FileDAO();  // 
+        fileDAO = new FileDAO();
+        userDAO = new UserDAO();
         
         // Set table columns
         filenameCol.setCellValueFactory(new PropertyValueFactory<>("filename"));
@@ -88,7 +101,7 @@ public class FileManagementController {
         progressBar.setProgress(0.0);
     }
     
-    // Set username (from login screen)
+    // Set username -> from login screen
     public void setUsername(String username) {
         this.currentUsername = username;
         usernameField.setText(username);
@@ -192,7 +205,7 @@ public class FileManagementController {
             // Retrieves selected file from table
             FileInfo selected = filesTable.getSelectionModel().getSelectedItem();
             if (selected == null) {
-                showAlert("No Selection", "Please select a file to download", Alert.AlertType.WARNING);
+                showAlert("None Selected", "Please select a file to download", Alert.AlertType.WARNING);
                 return;
             }
             
@@ -256,12 +269,17 @@ public class FileManagementController {
         }
     }
     
-    // Operation - Delete File
+    // Operation - Delete File (w/ permission checks)
     @FXML
     private void handleDelete(ActionEvent event) {
         FileInfo selected = filesTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("No Selection", "Please select a file to delete", Alert.AlertType.WARNING);
+            showAlert("None Selected", "Please select a file to delete", Alert.AlertType.WARNING);
+            return;
+        }
+        
+        if (!fileDAO.canModifyFile(selected.getId(), currentUsername)) {
+            showAlert("Denied", "Missing required permission to delete file.", Alert.AlertType.ERROR);
             return;
         }
         
@@ -289,6 +307,120 @@ public class FileManagementController {
                 statusLabel.setText("Delete failed!");
                 showAlert("Error", "Failed to delete file: " + e.getMessage(), Alert.AlertType.ERROR);
             }
+        }
+    }
+    
+    // Operation - Share Files
+    @FXML
+    private void handleShare(ActionEvent event) {
+        FileInfo selected = filesTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("None Selected", "Please select a file to share", Alert.AlertType.WARNING);
+            return;
+        }
+        
+        // Tells Users only owners can share
+        if (!viewingOwnFiles) {
+            showAlert("Can't Share", "Can only share files you own.", Alert.AlertType.WARNING);
+            return;
+        }
+        
+        showShareDialog(selected);
+    }
+    
+    // Switches between My Files and Shared Files
+    @FXML
+    private void handleViewShared(ActionEvent event) {
+        viewingOwnFiles = !viewingOwnFiles;
+        
+        if (viewingOwnFiles) {
+            loadUserFiles();
+            viewSharedBtn.setText("View Shared Files");
+            statusLabel.setText("Viewing your files");
+        } else {
+            loadSharedFiles();
+            viewSharedBtn.setText("View My Files");
+            statusLabel.setText("Viewing shared files");
+        }
+    }
+    
+    // Shows dialog
+    private void showShareDialog(FileInfo file) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Share File");
+        dialog.setHeaderText("Share: " + file.getFilename());
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        
+        List<String> usernames = userDAO.getAllUsernames();
+        usernames.remove(currentUsername);
+        
+        if (usernames.isEmpty()) {
+            showAlert("No Users", "No other users to share with.", Alert.AlertType.INFORMATION);
+            return;
+        }
+        
+        ComboBox<String> userCombo = new ComboBox<>();
+        userCombo.getItems().addAll(usernames);
+        userCombo.setPromptText("Select user...");
+        
+        CheckBox readCheck = new CheckBox("Can Read (download)");
+        readCheck.setSelected(true);
+        
+        CheckBox writeCheck = new CheckBox("Can Write (delete)");
+        
+        grid.add(new Label("Share with:"), 0, 0);
+        grid.add(userCombo, 1, 0);
+        grid.add(readCheck, 1, 1);
+        grid.add(writeCheck, 1, 2);
+        
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        Optional<ButtonType> result = dialog.showAndWait();
+        
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            String selectedUser = userCombo.getValue();
+            
+            if (selectedUser == null) {
+                showAlert("No User", "Please select a user.", Alert.AlertType.WARNING);
+                return;
+            }
+            
+            boolean canRead = readCheck.isSelected();
+            boolean canWrite = writeCheck.isSelected();
+            
+            if (!canRead && !canWrite) {
+                showAlert("No Permissions", "Select at least one permission.", Alert.AlertType.WARNING);
+                return;
+            }
+            
+            if (fileDAO.shareFile(file.getId(), selectedUser, canRead, canWrite)) {
+                String perms = canRead && canWrite ? "read+write" : (canRead ? "read-only" : "write-only");
+                showAlert("Success", "Shared with " + selectedUser + "\nPermissions: " + perms, Alert.AlertType.INFORMATION);
+            } else {
+                showAlert("Error", "Failed to share file.", Alert.AlertType.ERROR);
+            }
+        }
+    }
+    
+    // Loads shared files
+    private void loadSharedFiles() {
+        try {
+            System.out.println("Loading shared files for: " + currentUsername);
+            
+            List<FileInfo> files = fileDAO.getSharedFiles(currentUsername);
+            ObservableList<FileInfo> fileList = FXCollections.observableArrayList(files);
+            filesTable.setItems(fileList);
+            
+            System.out.println("Loaded " + files.size() + " shared files");
+            
+        } catch (Exception e) {
+            System.err.println("Error loading shared files: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
