@@ -1,5 +1,6 @@
 package com.mycompany.javafxapplication1;
 
+import com.mycompany.javafxapplication1.database.UserDAO; 
 import java.io.IOException;
 import java.util.Optional;
 import javafx.fxml.FXML;
@@ -48,16 +49,11 @@ public class PrimaryController {
     }
     
     private void dialogue(String headerMsg, String contentMsg) {
-        Stage secondaryStage = new Stage();
-        Group root = new Group();
-        Scene scene = new Scene(root, 300, 300, Color.DARKGRAY);
-
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Confirmation Dialog");
         alert.setHeaderText(headerMsg);
         alert.setContentText(contentMsg);
-
-        Optional<ButtonType> result = alert.showAndWait();
+        alert.showAndWait();
     }
 
     @FXML
@@ -65,12 +61,12 @@ public class PrimaryController {
         Stage secondaryStage = new Stage();
         Stage primaryStage = (Stage) registerBtn.getScene().getWindow();
         try {
-            DB myObj = new DB();
+            UserDAO userDAO = new UserDAO();
             String username = userTextField.getText();
             String password = passPasswordField.getText();
             
-            // Login Validation
-            if(myObj.validateUser(username, password)){
+            // Login Validation with MySQL
+            if(userDAO.validateUser(username, password)){
                 // Loads file management screen
                 FXMLLoader loader = new FXMLLoader();
                 loader.setLocation(getClass().getResource("filemanagement.fxml"));

@@ -1,9 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/javafx/FXMLController.java to edit this template
- */
 package com.mycompany.javafxapplication1;
 
+import com.mycompany.javafxapplication1.database.UserDAO;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
@@ -24,16 +21,9 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-/**
- * FXML Controller class
- *
- * @author ntu-user
- */
+// Incorporated MySQL
 public class RegisterController {
 
-    /**
-     * Initializes the controller class.
-     */
     @FXML
     private Button registerBtn;
 
@@ -70,10 +60,7 @@ public class RegisterController {
         
     }
 
-    private void dialogue(String headerMsg, String contentMsg) {
-        Stage secondaryStage = new Stage();
-        Group root = new Group();
-        Scene scene = new Scene(root, 300, 300, Color.DARKGRAY);
+    private void dialogue(String headerMsg, String contentMsg, Alert.AlertType type) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation Dialog");
         alert.setHeaderText(headerMsg);
@@ -85,36 +72,62 @@ public class RegisterController {
     private void registerBtnHandler(ActionEvent event) {
         Stage secondaryStage = new Stage();
         Stage primaryStage = (Stage) registerBtn.getScene().getWindow();
+        
+        
         try {
-            FXMLLoader loader = new FXMLLoader();
-            DB myObj = new DB();
-            if (passPasswordField.getText().equals(rePassPasswordField.getText())) {
-                myObj.addDataToDB(userTextField.getText(), passPasswordField.getText());
-                dialogue("Adding information to the database", "Successful!");
-                String[] credentials = {userTextField.getText(), passPasswordField.getText()};
-                loader.setLocation(getClass().getResource("secondary.fxml"));
-                Parent root = loader.load();
-                Scene scene = new Scene(root, 640, 480);
-                secondaryStage.setScene(scene);
-                SecondaryController controller = loader.getController();
-                secondaryStage.setTitle("Show users");
-                controller.initialise(credentials);
-                String msg = "some data sent from Register Controller";
-                secondaryStage.setUserData(msg);
-            } else {
-                loader.setLocation(getClass().getResource("register.fxml"));
-                Parent root = loader.load();
-                Scene scene = new Scene(root, 640, 480);
-                secondaryStage.setScene(scene);
-                secondaryStage.setTitle("Register a new User");
+            
+            String username = userTextField.getText();
+            String password = passPasswordField.getText();
+            String rePassword = rePassPasswordField.getText();
+            
+            // Validation
+            if (username.isEmpty() || password.isEmpty()) {
+                dialogue("Empty Fields", "Please fill in all fields.", Alert.AlertType.WARNING);
+                return;
             }
-            secondaryStage.show();
-            primaryStage.close();
+            
+            if (!password.equals(rePassword)) {
+                dialogue("Password Mismatch", "Passwords do not match. Please try again.", Alert.AlertType.ERROR);
+                return;
+            }
+            
+            // NEW: Register with MySQL
+            UserDAO userDAO = new UserDAO();
+            
+            // Check if user already exists
+            if (userDAO.userExists(username)) {
+                dialogue("Username Taken", "This username already exists. Please choose another.", Alert.AlertType.ERROR);
+                return;
+            }
+            
+            // Register user
+            if (userDAO.registerUser(username, password)) {
+                dialogue("Success!", "Account created successfully!\n\nYou can now login.", Alert.AlertType.INFORMATION);
+                
+                // Go to file management screen
+                FXMLLoader loader = new FXMLLoader();
+                loader.setLocation(getClass().getResource("filemanagement.fxml"));
+                Parent root = loader.load();
+                
+                FileManagementController controller = loader.getController();
+                controller.setUsername(username);
+                
+                Scene scene = new Scene(root, 800, 600);
+                secondaryStage.setScene(scene);
+                secondaryStage.setTitle("File Management - " + username);
+                secondaryStage.show();
+                primaryStage.close();
+                
+            } else {
+                dialogue("Registration Failed", "Could not create account. Please try again.", Alert.AlertType.ERROR);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+    
+    
 
     @FXML
     private void backLoginBtnHandler(ActionEvent event) {
