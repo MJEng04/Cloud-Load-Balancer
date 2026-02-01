@@ -38,9 +38,13 @@ developed as part of the COMP20081 Systems Software coursework.
 - File information is saved to the database and persists after restart
 - Integrated database-backed file management into the JavaFX GUI
 
-**Day 3 – User Roles & File Sharing (In Progress)**
-- Introducing standard and admin user roles
-- Adding file sharing between users
-- Implementing read and write permissions
-- Preparing admin features for user management
+**Day 3 – User Roles & File Sharing**
+- Added file sharing between users
+- Added read and write access controls
+- Added a share dialog to select users and permissions
+- Added a toggle to switch between My Files and Shared Files
+- System checks user permissions before allowing file actions
+- Updated FileDAO to support file sharing
+- Updated UserDAO to support user management
+- Applied access checks in FileManagementController
 
