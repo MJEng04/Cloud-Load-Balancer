@@ -3,11 +3,11 @@ COMP20081 Systems Software CWK
 
 Implementation and Validation of a Cloud Load Balancer
 
-**Desc**
+# Desc
 This project implements a distributed cloud-based file storage system with a load balancer,
 developed as part of the COMP20081 Systems Software coursework.
 
-**Key Features**
+# Key Features
 - User Authentication (Register/Login via MySQL)
 - Role-based Users (Admin / Standard)
 - File Upload & Download
@@ -17,14 +17,14 @@ developed as part of the COMP20081 Systems Software coursework.
 - JavaFX GUI for file management
 - Cross-session Persistence (files remain after restart)
 
-**Technologies**
+# Technologies
 - Java (Maven)
 - JavaFX
 - Docker & Docker Compose
 - MySQL
 - SQLite
 
-**Development Progress**
+#  Development Progress
 **Day 1 – Core File System**
 - Implemented file upload and download functionality
 - Files
