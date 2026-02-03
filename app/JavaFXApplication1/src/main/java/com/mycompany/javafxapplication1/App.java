@@ -10,37 +10,23 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * JavaFX App
- */
+// App - Updated to fix crashes and double DB issue
 public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        Stage secondaryStage = new Stage();
-        DB myObj = new DB();
-        myObj.log("-------- Simple Tutorial on how to make JDBC connection to SQLite DB ------------");
-        myObj.log("\n---------- Drop table ----------");
         try {
-            myObj.delTable(myObj.getTableName());
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        myObj.log("\n---------- Create table ----------");
-        try {
-            myObj.createTable(myObj.getTableName());
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
+            // Loads login screen
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("primary.fxml"));
             Parent root = loader.load();
+            
+            // Sets up inital scene
             Scene scene = new Scene(root, 640, 480);
-            secondaryStage.setScene(scene);
-            secondaryStage.setTitle("Primary View");
-            secondaryStage.show();
-
+            stage.setScene(scene);
+            stage.setTitle("Load Balancer Application - Login");
+            stage.show();
+       
         } catch (Exception e) {
             e.printStackTrace();
         }
