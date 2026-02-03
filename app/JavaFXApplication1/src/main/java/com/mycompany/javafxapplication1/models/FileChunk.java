@@ -16,6 +16,15 @@ public class FileChunk {
         this.checksum = calculateChecksum();
     }
     
+    // Constructor w/ checksum - for encryption
+    public FileChunk(int fileId, int chunkNumber, byte[] data, String checksum) {
+        this.fileId = fileId;
+        this.chunkNumber = chunkNumber;
+        this.data = data;
+        this.checksum = checksum;
+    }
+    
+    
     // Calculate checksum
     private String calculateChecksum() {
         java.util.zip.CRC32 crc = new java.util.zip.CRC32();

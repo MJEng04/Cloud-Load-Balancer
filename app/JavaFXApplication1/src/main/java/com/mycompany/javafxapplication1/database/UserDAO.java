@@ -3,10 +3,22 @@ package com.mycompany.javafxapplication1.database;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.security.SecureRandom;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import java.util.Base64;
+import java.util.Arrays;
 
 
 // Handles user authentication with MySQL - class for login and register
 public class UserDAO {
+    
+    // Parameters for password hashing -> controls strength of hashing
+    private static final int ITERATIONS = 10000;
+    private static final int KEY_LENGTH = 256;
+    private static final int SALT_LENGTH = 30;
     
     // Register user in MySQL
     public boolean registerUser(String username, String password) {
@@ -16,10 +28,10 @@ public class UserDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, username);
-            stmt.setString(2, password); // Needs hashing at some point
+            stmt.setString(2, hashPassword(password));
             
             stmt.executeUpdate();
-            System.out.println("User registered in MySQL: " + username);
+            System.out.println("User registered: " + username);
             return true;
             
         } catch (SQLException e) {
@@ -49,9 +61,9 @@ public class UserDAO {
             ResultSet rs = stmt.executeQuery();
             
             if (rs.next()) {
-                String storedPassword = rs.getString("password");
+                String storedHash = rs.getString("password");
                 
-                if (storedPassword.equals(password)) {
+                if (verifyPassword(password, storedHash)) {
                     System.out.println("Login successful: " + username);
                     return true;
                 } else {
@@ -229,6 +241,66 @@ public class UserDAO {
         }
         
         return usernames;
+    }
+    
+    // Hashing Password
+    private String hashPassword(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        // Generates random salt -> ensures unique and secure key generation
+        byte[] salt = generateSalt();
+        
+        // Hashes password
+        byte[] hash = pbkdf2(password.toCharArray(), salt);
+        
+        // Return salt and hash -> both encoded
+        return Base64.getEncoder().encodeToString(salt) + "$" + Base64.getEncoder().encodeToString(hash);
+    }
+    
+
+    // Verifies password with stored hash value
+    private boolean verifyPassword(String password, String storedHash) {
+        try {
+            // Splits stored hash into salt + hash
+            String[] parts = storedHash.split("\\$");
+            if (parts.length != 2) {
+                return false;
+            }
+            
+            byte[] salt = Base64.getDecoder().decode(parts[0]);
+            byte[] hash = Base64.getDecoder().decode(parts[1]);
+            
+            // Hashes provided password with salt
+            byte[] testHash = pbkdf2(password.toCharArray(), salt);
+            
+            // Compares hashes
+            return Arrays.equals(hash, testHash);
+            
+        } catch (Exception e) {
+            System.err.println("Error verifying password: " + e.getMessage());
+            return false;
+        }
+    }
+    
+
+    // Generates random salt value -> used for added security
+    private byte[] generateSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[SALT_LENGTH];
+        random.nextBytes(salt);
+        return salt;
+    }
+    
+
+    // Derives PBKDF2 key
+    private byte[] pbkdf2(char[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        PBEKeySpec spec = new PBEKeySpec(password, salt, ITERATIONS, KEY_LENGTH);
+        Arrays.fill(password, Character.MIN_VALUE);
+        
+        try {
+            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            return skf.generateSecret(spec).getEncoded();
+        } finally {
+            spec.clearPassword();
+        }
     }
     
     
