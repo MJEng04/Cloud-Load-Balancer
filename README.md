@@ -48,3 +48,10 @@ developed as part of the COMP20081 Systems Software coursework.
 - Updated UserDAO to support user management
 - Applied access checks in FileManagementController
 
+**Day 4 – Security & Cleanup**
+- Added password hashing using PBKDF2 (with salt)
+- Implemented AES encryption for file chunks before storage
+- Files now stored encrypted on disk and decrypted on download
+- Removed old SQLite database code
+- Updated app startup to use MySQL only
+- Fixed NetBeans crashes caused by multiple database initialisations
