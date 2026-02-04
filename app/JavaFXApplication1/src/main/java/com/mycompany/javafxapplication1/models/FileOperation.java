@@ -8,13 +8,15 @@ public class FileOperation {
     private String operation; // either "upload" or "download"
     private String status;    // either "waiting", "running", "completed"
     private long timestamp;
+    private long fileSize;
     
     // Constructor
-    public FileOperation (int id, String username, String filename, String operation){
+    public FileOperation (int id, String username, String filename, String operation, long fileSize){
         this.id = id;
         this.username = username;
         this.filename = filename;
         this.operation = operation;
+        this.fileSize = fileSize;
         this.status = "waiting";
         this.timestamp = System.currentTimeMillis();    
     }
@@ -48,6 +50,26 @@ public class FileOperation {
         return timestamp;
     }
     
+    public long getFileSize() {
+        return fileSize;
+    }
+    
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
+    
+
+    // Retrieves formatted file size
+    public String getFormattedSize() {
+        if (fileSize < 1024) {
+            return fileSize + " B";
+        } else if (fileSize < 1024 * 1024) {
+            return String.format("%.2f KB", fileSize / 1024.0);
+        } else {
+            return String.format("%.2f MB", fileSize / (1024.0 * 1024.0));
+        }
+    }
+    
     // Makes object output readable 
     @Override
     public String toString() {
@@ -57,6 +79,7 @@ public class FileOperation {
                 ", file='" + filename + '\'' +
                 ", operation='" + operation + '\'' +
                 ", status='" + status + '\'' +
+                ", size=" + getFormattedSize() +
                 '}';
     }
     
