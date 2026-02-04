@@ -55,3 +55,15 @@ developed as part of the COMP20081 Systems Software coursework.
 - Removed old SQLite database code
 - Updated app startup to use MySQL only
 - Fixed NetBeans crashes caused by multiple database initialisations
+
+**Day 5 – Terminal Command Interface**
+- Introduced a terminal command interface within the application
+- Added command validation for user input
+- Implemented file management commands
+- Added formatted output for file listings
+- Added help command to display supported commands
+- Added error messages for invalid commands and permissions
+
+**Day 6 – Load Balancer Improvements**
+- Updated the load balancer to support multiple scheduling algorithms
+- Updated chunk distribution to work across all algorithms
