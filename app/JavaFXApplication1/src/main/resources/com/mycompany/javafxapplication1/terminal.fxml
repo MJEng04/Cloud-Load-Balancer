@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.javafxapplication1.TerminalController">
+    <padding>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+    </padding>
+    
+    <!-- Header -->
+    <HBox spacing="10.0" alignment="CENTER">
+        <Label text="User:" />
+        <TextField fx:id="usernameField" editable="false" prefWidth="150.0" />
+    </HBox>
+    
+    <!-- Terminal Output -->
+    <TextArea fx:id="terminalOutput" prefHeight="500.0" prefWidth="800.0" 
+              style="-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-background-color: #1e1e1e; -fx-text-fill: #00ff00;"
+              editable="false" wrapText="true" />
+    
+    <!-- Command Input -->
+    <HBox spacing="10.0" alignment="CENTER">
+        <Label text="Command" style="-fx-font-family: 'Courier New'; -fx-font-size: 14px;" />
+        <TextField fx:id="commandInput" prefWidth="700.0" 
+                   promptText="Type a command (e.g. 'help')..." />
+        <Button text="Help"  onAction="#quickCommand" style="-fx-font-size: 10px;" />
+        <Button text="Ls"    onAction="#quickCommand" style="-fx-font-size: 10px;" />
+        <Button text="Upload" onAction="#quickCommand" style="-fx-font-size: 10px;" />
+        <Button text="Shared" onAction="#quickCommand" style="-fx-font-size: 10px;" />
+        <Button text="Clear" onAction="#quickCommand" style="-fx-font-size: 10px;" />
+    </HBox>
+</VBox>

@@ -72,6 +72,9 @@ public class FileManagementController {
     @FXML
     private Button viewSharedBtn;
     
+    @FXML
+    private Button terminalBtn;
+    
     // Services
     private FileManager fileManager;
     private LoadBalancer loadBalancer;
@@ -490,5 +493,29 @@ public class FileManagementController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    // Opens Termina
+    @FXML
+    private void handleTerminal(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("terminal.fxml"));
+            Parent root = loader.load();
+
+            // Sets username in terminal
+            TerminalController controller = loader.getController();
+            controller.setUsername(currentUsername);
+
+            // Shows terminal window
+            Stage terminalStage = new Stage();
+            Scene scene = new Scene(root, 850, 650);
+            terminalStage.setScene(scene);
+            terminalStage.setTitle("Terminal - " + currentUsername);
+            terminalStage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

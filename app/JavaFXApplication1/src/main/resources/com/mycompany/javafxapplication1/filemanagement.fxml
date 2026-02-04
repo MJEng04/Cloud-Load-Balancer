@@ -31,6 +31,8 @@
                     style="-fx-background-color: #dc2626; -fx-text-fill: white;" />
             <Button fx:id="viewSharedBtn" text="View Shared Files" onAction="#handleViewShared" prefWidth="150.0" 
                     style="-fx-background-color: #f97316; -fx-text-fill: white;" />
+            <Button fx:id="terminalBtn" text="Open Terminal" onAction="#handleTerminal" prefWidth="120.0" 
+                    style="-fx-background-color: #000000; -fx-text-fill: #00ff00;" />
         </HBox>
         
         <!-- Files Table -->
