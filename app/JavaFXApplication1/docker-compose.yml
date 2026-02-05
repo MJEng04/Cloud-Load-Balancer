@@ -1,0 +1,51 @@
+services:
+  # MySQL Database Containers
+  mysql-db:
+    image: mysql:8.0
+    container_name: n1264601_dkrdb-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: adminpass
+      MYSQL_DATABASE: n1264601_dkrdb
+      MYSQL_USER: n1264601
+      MYSQL_PASSWORD: student123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./n1264601_dkrdb.sql:/docker-entrypoint-initdb.d/n1264601_dkrdb.sql
+    networks:
+      - n1264601-ntwk
+
+  # Storage Location 1
+  storage1:
+    image: busybox:latest
+    container_name: n1264601-storage1
+    command: sh -c "mkdir -p /storage && sleep infinity"
+    volumes:
+      - storage1-data:/storage
+    networks:
+      - n1264601-ntwk
+
+  # Storage Location 2
+  storage2:
+    image: busybox:latest
+    container_name: n1264601-storage2
+    command: sh -c "mkdir -p /storage && sleep infinity"
+    volumes:
+      - storage2-data:/storage
+    networks:
+      - n1264601-ntwk
+
+# Volumes for data locations
+volumes:
+  mysql-data:
+    driver: local
+  storage1-data:
+    driver: local
+  storage2-data:
+    driver: local
+
+# Network for inter-container communication
+networks:
+  n1264601-ntwk:
