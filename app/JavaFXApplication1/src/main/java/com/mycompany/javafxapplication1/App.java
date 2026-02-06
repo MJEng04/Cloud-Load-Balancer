@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// App - Updated to fix crashes and double DB issue
 public class App extends Application {
 
     @Override

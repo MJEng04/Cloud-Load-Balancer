@@ -153,6 +153,10 @@ public class TerminalController {
                 case "clear":
                     clearTerminal();
                     break;
+                    
+                case "whoami":
+                    appendOutput(currentUsername + "\n\n");
+                    break;
                    
                 case "exit":
                 case "logout":
@@ -180,6 +184,7 @@ public class TerminalController {
         appendOutput("  rm <file> - Delete file\n");
         appendOutput("  shared - List files shared with you\n");
         appendOutput("  pwd - Show current directory\n");
+        appendOutput("  whoami - Show current user\n");
         appendOutput("  clear - Clear terminal screen\n");
         appendOutput("  help - Show help\n");
         appendOutput("  exit, logout - Return to login screen\n\n");

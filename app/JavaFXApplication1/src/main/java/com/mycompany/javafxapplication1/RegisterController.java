@@ -45,27 +45,12 @@ public class RegisterController {
     @FXML
     private Button selectBtn;
     
-    @FXML
-    private void selectBtnHandler(ActionEvent event) throws IOException {
-        Stage primaryStage = (Stage) selectBtn.getScene().getWindow();
-        primaryStage.setTitle("Select a File");
-
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Resource File");
-        File selectedFile = fileChooser.showOpenDialog(primaryStage);
-        
-        if(selectedFile!=null){
-            fileText.setText((String)selectedFile.getCanonicalPath());
-        }
-        
-    }
 
     private void dialogue(String headerMsg, String contentMsg, Alert.AlertType type) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation Dialog");
         alert.setHeaderText(headerMsg);
         alert.setContentText(contentMsg);
-        Optional<ButtonType> result = alert.showAndWait();
     }
 
     @FXML
@@ -102,7 +87,7 @@ public class RegisterController {
             
             // Register user
             if (userDAO.registerUser(username, password)) {
-                dialogue("Success!", "Account created successfully!\n\nYou can now login.", Alert.AlertType.INFORMATION);
+                dialogue("Success!", "Account created successfully!", Alert.AlertType.INFORMATION);
                 
                 // Go to file management screen
                 FXMLLoader loader = new FXMLLoader();

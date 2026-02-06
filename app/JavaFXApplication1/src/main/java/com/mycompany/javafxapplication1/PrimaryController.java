@@ -33,7 +33,6 @@ public class PrimaryController {
     private void registerBtnHandler(ActionEvent event) {
         Stage secondaryStage = new Stage();
         Stage primaryStage = (Stage) registerBtn.getScene().getWindow();
-        DB myObj = new DB();
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("register.fxml"));

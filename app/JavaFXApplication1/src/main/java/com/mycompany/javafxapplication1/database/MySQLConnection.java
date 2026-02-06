@@ -22,9 +22,6 @@ public class MySQLConnection {
     // Builds the connection URL
     private static final String DB_URL = "jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME;
     
-    // Connection timeout
-    private static final int TIMEOUT = 30;
-    
     // Connection to database
     public static Connection getConnection() throws SQLException, ClassNotFoundException {
         // Loads MySQL driver

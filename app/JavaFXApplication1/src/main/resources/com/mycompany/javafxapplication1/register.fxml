@@ -9,7 +9,7 @@
 
 <AnchorPane id="AnchorPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.javafxapplication1.RegisterController">
    <children>
-      <GridPane alignment="CENTER" layoutY="124.0" prefHeight="126.0" prefWidth="600.0">
+      <GridPane alignment="CENTER" layoutY="124.0" prefHeight="126.0" prefWidth="600.0" >
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -31,8 +31,6 @@
             <TextField fx:id="userTextField" GridPane.columnIndex="1" />
             <PasswordField fx:id="passPasswordField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <PasswordField fx:id="rePassPasswordField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Button fx:id="selectBtn" mnemonicParsing="false" onAction="#selectBtnHandler" text="Select File Name" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
-            <Text fx:id="fileText" strokeType="OUTSIDE" strokeWidth="0.0" text="Select File." GridPane.rowIndex="4" />
          </children>
       </GridPane>
       <Label layoutX="272.0" layoutY="94.0" text="Register New User" />
