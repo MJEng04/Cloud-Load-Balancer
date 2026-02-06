@@ -67,3 +67,9 @@ developed as part of the COMP20081 Systems Software coursework.
 **Day 6 – Load Balancer Improvements**
 - Updated the load balancer to support multiple scheduling algorithms
 - Updated chunk distribution to work across all algorithms
+
+**Day 7 – Docker Integration**
+- Containerised MySQL database using Docker Compose
+- Implemented persistent volumes for database and storage locations
+- Mapped MySQL on port 3307 for JavaFX integration
+- Verified database connectivity to JavaFX application
