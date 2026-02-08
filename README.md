@@ -22,7 +22,6 @@ developed as part of the COMP20081 Systems Software coursework.
 - JavaFX
 - Docker & Docker Compose
 - MySQL
-- SQLite
 
 #  Development Progress
 **Day 1 – Core File System**
