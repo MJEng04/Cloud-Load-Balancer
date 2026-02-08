@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+
+<VBox spacing="10.0" xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.mycompany.javafxapplication1.LogViewerController">
+    
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+    
+    <!-- Header -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="System Logs" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Refresh" onAction="#handleRefresh"/>
+        <Button text="Clear Logs" onAction="#handleClear"/>
+    </HBox>
+    
+    <!-- Filter options -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Show:"/>
+        <ComboBox fx:id="filterCombo" prefWidth="150"> 
+            <items>
+                <javafx.collections.FXCollections fx:factory="observableArrayList">
+                    <String fx:value="All Logs"/>
+                    <String fx:value="Last 50 Lines"/>
+                    <String fx:value="Last 100 Lines"/>
+                    <String fx:value="User Actions Only"/>
+                    <String fx:value="System Events Only"/>
+                    <String fx:value="Security Events Only"/>
+                    <String fx:value="Errors Only"/>
+                </javafx.collections.FXCollections>
+            </items>
+        </ComboBox>
+    </HBox>
+    
+    <!-- Log display area -->
+    <TextArea fx:id="logTextArea" 
+              prefHeight="500" 
+              prefWidth="800"
+              editable="false"
+              wrapText="false"
+              style="-fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
+    
+    <!-- Stats -->
+    <HBox spacing="20">
+        <Label fx:id="statsLabel" text="Total logs: 0"/>
+    </HBox>
+    
+</VBox>

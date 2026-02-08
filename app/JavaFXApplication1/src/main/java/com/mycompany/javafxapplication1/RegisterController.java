@@ -1,6 +1,7 @@
 package com.mycompany.javafxapplication1;
 
 import com.mycompany.javafxapplication1.database.UserDAO;
+import com.mycompany.javafxapplication1.services.SystemLogger;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
@@ -87,6 +88,7 @@ public class RegisterController {
             
             // Register user
             if (userDAO.registerUser(username, password)) {
+                SystemLogger.logRegistration(username);
                 dialogue("Success!", "Account created successfully!", Alert.AlertType.INFORMATION);
                 
                 // Go to file management screen

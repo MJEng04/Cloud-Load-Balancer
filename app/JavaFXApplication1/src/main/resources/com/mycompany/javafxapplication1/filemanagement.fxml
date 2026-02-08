@@ -33,6 +33,8 @@
                     style="-fx-background-color: #f97316; -fx-text-fill: white;" />
             <Button fx:id="terminalBtn" text="Open Terminal" onAction="#handleTerminal" prefWidth="120.0" 
                     style="-fx-background-color: #000000; -fx-text-fill: #00ff00;" />
+            <Button fx:id="viewLogsBtn" text="View Logs" onAction="#handleViewLogs" 
+                    style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
         </HBox>
         
         <!-- Files Table -->

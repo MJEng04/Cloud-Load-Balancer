@@ -6,6 +6,8 @@ import com.mycompany.javafxapplication1.services.FileManager;
 import com.mycompany.javafxapplication1.services.LoadBalancer;
 import com.mycompany.javafxapplication1.database.FileDAO;
 import com.mycompany.javafxapplication1.database.UserDAO;
+import com.mycompany.javafxapplication1.services.SystemLogger;
+
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -74,6 +76,9 @@ public class FileManagementController {
     
     @FXML
     private Button terminalBtn;
+    
+    @FXML
+    private Button viewLogsBtn;
     
     // Services
     private FileManager fileManager;
@@ -180,6 +185,8 @@ public class FileManagementController {
             statusLabel.setText("Upload complete: " + selectedFile.getName());
             
             showAlert("Success", "File uploaded successfully!", Alert.AlertType.INFORMATION);
+            SystemLogger.logFileUpload(currentUsername, selectedFile.getName(), 
+                selectedFile.length(), chunks.size());
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -249,6 +256,7 @@ public class FileManagementController {
             File reconstructed = fileManager.reconstructFile(chunks, saveFile.getAbsolutePath());
             progressBar.setProgress(1.0);
             statusLabel.setText("Download complete: " + selected.getFilename());
+            SystemLogger.logFileDownload(currentUsername, selected.getFilename());
             
             showAlert("Success", "File downloaded to: " + saveFile.getAbsolutePath(), Alert.AlertType.INFORMATION);
             
@@ -302,7 +310,9 @@ public class FileManagementController {
                 loadUserFiles();
                 
                 statusLabel.setText("Deleted: " + selected.getFilename());
+                SystemLogger.logFileDelete(currentUsername, selected.getFilename());
                 showAlert("Success", "File deleted successfully!", Alert.AlertType.INFORMATION);
+               
                 
                 
             } catch (Exception e) {
@@ -404,6 +414,7 @@ public class FileManagementController {
             if (fileDAO.shareFile(file.getId(), selectedUser, canRead, canWrite)) {
                 String perms = canRead && canWrite ? "read+write" : (canRead ? "read-only" : "write-only");
                 showAlert("Success", "Shared with " + selectedUser + "\nPermissions: " + perms, Alert.AlertType.INFORMATION);
+                // SystemLogger.logFileShare(currentUsername, selectedInfo.getFilename(), selectedUser, perms);
             } else {
                 showAlert("Error", "Failed to share file.", Alert.AlertType.ERROR);
             }
@@ -495,7 +506,7 @@ public class FileManagementController {
         alert.showAndWait();
     }
     
-    // Opens Termina
+    // Opens Terminal
     @FXML
     private void handleTerminal(ActionEvent event) {
         try {
@@ -513,6 +524,25 @@ public class FileManagementController {
             terminalStage.setScene(scene);
             terminalStage.setTitle("Terminal - " + currentUsername);
             terminalStage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // Opens View Logs
+    @FXML
+    private void handleViewLogs(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("logviewer.fxml"));
+            Parent root = loader.load();
+
+            Stage logStage = new Stage();
+            Scene scene = new Scene(root, 850, 650);
+            logStage.setScene(scene);
+            logStage.setTitle("System Logs");
+            logStage.show();
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,6 +1,7 @@
 package com.mycompany.javafxapplication1;
 
 import com.mycompany.javafxapplication1.database.UserDAO; 
+import com.mycompany.javafxapplication1.services.SystemLogger;
 import java.io.IOException;
 import java.util.Optional;
 import javafx.fxml.FXML;
@@ -66,6 +67,7 @@ public class PrimaryController {
             
             // Login Validation with MySQL
             if(userDAO.validateUser(username, password)){
+                SystemLogger.logLogin(username, true);
                 // Loads file management screen
                 FXMLLoader loader = new FXMLLoader();
                 loader.setLocation(getClass().getResource("filemanagement.fxml"));
@@ -83,6 +85,7 @@ public class PrimaryController {
                 primaryStage.close();
             }
             else{
+                SystemLogger.logLogin(username, false);
                 dialogue("Invalid User Name / Password","Please try again!");
             }
 
