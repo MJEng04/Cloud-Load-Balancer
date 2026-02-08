@@ -7,6 +7,7 @@ import com.mycompany.javafxapplication1.services.LoadBalancer;
 import com.mycompany.javafxapplication1.database.FileDAO;
 import com.mycompany.javafxapplication1.database.UserDAO;
 import com.mycompany.javafxapplication1.services.SystemLogger;
+import com.mycompany.javafxapplication1.services.DelaySim;
 
 
 import javafx.collections.FXCollections;
@@ -23,6 +24,7 @@ import javafx.stage.FileChooser;
 import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.concurrent.Task;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -414,7 +416,7 @@ public class FileManagementController {
             if (fileDAO.shareFile(file.getId(), selectedUser, canRead, canWrite)) {
                 String perms = canRead && canWrite ? "read+write" : (canRead ? "read-only" : "write-only");
                 showAlert("Success", "Shared with " + selectedUser + "\nPermissions: " + perms, Alert.AlertType.INFORMATION);
-                // SystemLogger.logFileShare(currentUsername, selectedInfo.getFilename(), selectedUser, perms);
+                SystemLogger.logFileShare(currentUsername, file.getFilename(), selectedUser, perms);
             } else {
                 showAlert("Error", "Failed to share file.", Alert.AlertType.ERROR);
             }
