@@ -48,6 +48,9 @@
             </columns>
         </TableView>
         
+        <!-- Toggles Delays -->
+        <CheckBox fx:id="delayCheckbox" text="Enable Delays" selected="false"/>
+        
         <!-- Status Bar -->
         <Label fx:id="statusLabel" text="Ready" style="-fx-text-fill: green;" />
         

@@ -82,6 +82,9 @@ public class FileManagementController {
     @FXML
     private Button viewLogsBtn;
     
+    @FXML
+    private CheckBox delayCheckbox;
+    
     // Services
     private FileManager fileManager;
     private LoadBalancer loadBalancer;
@@ -109,6 +112,17 @@ public class FileManagementController {
         // Set status
         statusLabel.setText("Ready");
         progressBar.setProgress(0.0);
+        
+        // Toggle delay
+        if (delayCheckbox != null) {
+            delayCheckbox.setOnAction(e -> {
+                if (delayCheckbox.isSelected()) {
+                    DelaySim.enable();
+                } else {
+                    DelaySim.disable();
+                }
+            });
+        }
     }
     
     // Set username -> from login screen
@@ -133,6 +147,7 @@ public class FileManagementController {
             }
             
             statusLabel.setText("Uploading: " + selectedFile.getName());
+            DelaySim.delay("upload");
             progressBar.setProgress(0.2);
             
             // Saves to database to get file ID
@@ -222,6 +237,7 @@ public class FileManagementController {
             }
             
             statusLabel.setText("Downloading: " + selected.getFilename());
+            DelaySim.delay("download");
             progressBar.setProgress(0.3);
             
             // Retrieves chunk info from database
@@ -303,6 +319,9 @@ public class FileManagementController {
         confirm.setContentText("This action cannot be undone.");
         
         Optional<ButtonType> result = confirm.showAndWait();
+        
+        DelaySim.delay("delete");
+        
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 // Delete from database
