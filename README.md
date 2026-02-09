@@ -72,3 +72,20 @@ developed as part of the COMP20081 Systems Software coursework.
 - Implemented persistent volumes for database and storage locations
 - Mapped MySQL on port 3307 for JavaFX integration
 - Verified database connectivity to JavaFX application
+
+**Day 8 – Health Checking**
+- Implemented storage health checks to validate storage availability
+- Added existence and accessibility checks for storage locations
+- Integrated health checks with load balancer storage selector
+- Ensured only healthy storage locations are used for file operations
+
+**Day 9 – Artificial Delay Simulation**
+- Implemented artificial delays to simulate real-world cloud behaviour
+- Added delays to upload, download, and delete operations
+
+**Day 10 – Performance Metrics & Monitoring**
+- Added runtime performance metrics tracking
+- Implemented operation timing for uploads and downloads
+- Tracked total uploads, downloads, and deletes
+- Recorded storage distribution and load balancer efficiency
+- Added metrics reports for monitoring and validation
