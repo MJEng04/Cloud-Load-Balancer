@@ -31,10 +31,10 @@
                     <String fx:value="All Logs"/>
                     <String fx:value="Last 50 Lines"/>
                     <String fx:value="Last 100 Lines"/>
-                    <String fx:value="User Actions Only"/>
-                    <String fx:value="System Events Only"/>
-                    <String fx:value="Security Events Only"/>
-                    <String fx:value="Errors Only"/>
+                    <String fx:value="User Actions"/>
+                    <String fx:value="System Events"/>
+                    <String fx:value="Security Events"/>
+                    <String fx:value="Errors"/>
                 </javafx.collections.FXCollections>
             </items>
         </ComboBox>
