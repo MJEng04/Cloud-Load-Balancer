@@ -32,6 +32,9 @@ public class LoadBalancer {
     // Priority queue for SJN -> sorted by file size
     private PriorityQueue<FileOperation> sjnQueue;
     
+    // Health check service
+    private HealthCheck healthCheck;
+    
     // Constructor
     public LoadBalancer() {
         storageNodes = new ArrayList<>();
@@ -50,6 +53,13 @@ public class LoadBalancer {
                 return Long.compare(o1.getFileSize(), o2.getFileSize());
             }
         });
+        
+        // Initialises health checks
+        healthCheck = new HealthCheck();
+        healthCheck.registerStorage("storage1");
+        healthCheck.registerStorage("storage2");
+        healthCheck.checkAllStorage();
+        
     }
     
 
@@ -60,36 +70,53 @@ public class LoadBalancer {
     }
     
 
-    // Retrieves next storage location using current algorithm
+    // Retrieves next storage location using current algorithm - with health checks
     public String getNextStorage() {
+         // Retrieves healthy storage nodes
+        List<String> healthyNodes = healthCheck.getHealthyStorage();
+        
+        if (healthyNodes.isEmpty()) {
+            System.err.println("No healthy storage locations available -> proceed to using fallback.");
+            healthyNodes = storageNodes;
+        }
+        
         switch (currentAlgorithm) {
             case ROUND_ROBIN:
-                return getNextStorageRoundRobin();
+                return getNextStorageRoundRobin(healthyNodes);
             case FCFS:
-                return getNextStorageFCFS();
+                return getNextStorageFCFS(healthyNodes);
             case SJN:
-                return getNextStorageSJN();
+                return getNextStorageSJN(healthyNodes);
             default:
-                return getNextStorageRoundRobin();
+                return getNextStorageRoundRobin(healthyNodes);
         }
     }
     
 
     // Retrieves next storage location with file size - for SJN
     public String getNextStorage(long fileSize) {
+        List<String> healthyNodes = healthCheck.getHealthyStorage();
+        
+        if (healthyNodes.isEmpty()) {
+            healthyNodes = storageNodes;
+        }
+                
         switch (currentAlgorithm) {
             case SJN:
-                return getNextStorageSJN(fileSize);
+                return getNextStorageSJN(healthyNodes, fileSize);
             default:
                 return getNextStorage();
         }
     }
     
     // Round robin scheduling algorithm - takes turns (storage1, storage2, storage1, storage2, ...)
-    public String getNextStorageRoundRobin() {
-        String selected = storageNodes.get(currentIndex);
+    public String getNextStorageRoundRobin(List<String> availableNodes) {
+        if (availableNodes.isEmpty()) {
+            return storageNodes.get(0); // Ultimate fallback
+        }
         
-        // Move to next storage next time
+        String selected = availableNodes.get(currentIndex % availableNodes.size());
+        // Moves to next storage next time
         currentIndex = (currentIndex + 1) % storageNodes.size();
         
         System.out.println("LoadBalancer: Selected " + selected);
@@ -97,8 +124,12 @@ public class LoadBalancer {
     }
     
     // First Come First Serve -> process the requests in the order that they arrive
-    private String getNextStorageFCFS() {
-        String selected = storageNodes.get(currentIndex);
+    private String getNextStorageFCFS(List<String> availableNodes) {
+        if (availableNodes.isEmpty()) {
+            return storageNodes.get(0);
+        }
+       
+        String selected = availableNodes.get(currentIndex % availableNodes.size());
         currentIndex = (currentIndex + 1) % storageNodes.size();
         
         System.out.println("LoadBalancer: Selected " + selected);
@@ -107,9 +138,14 @@ public class LoadBalancer {
     
 
     // Shortest Job Next - prioritises smaller files
-    private String getNextStorageSJN() {
+    private String getNextStorageSJN(List<String> availableNodes) {
         // The default behavior when no file size given
-        String selected = storageNodes.get(currentIndex);
+        
+        if (availableNodes.isEmpty()) {
+            return storageNodes.get(0);
+        }
+            
+        String selected = availableNodes.get(currentIndex % availableNodes.size());
         currentIndex = (currentIndex + 1) % storageNodes.size();
         
         System.out.println("LoadBalancer: Selected " + selected);
@@ -118,9 +154,13 @@ public class LoadBalancer {
     
 
     // SJN with file size
-    private String getNextStorageSJN(long fileSize) {
+    private String getNextStorageSJN(List<String> availableNodes, long fileSize) {
+        if (availableNodes.isEmpty()) {
+            return storageNodes.get(0);
+        }
+        
         // Searches for storage with least total load
-        String selected = storageNodes.get(currentIndex);
+        String selected = availableNodes.get(currentIndex % availableNodes.size());
         currentIndex = (currentIndex + 1) % storageNodes.size();
         
         System.out.println("LoadBalancer: Selected " + selected + " for file (" + formatSize(fileSize) + ")");
@@ -131,6 +171,7 @@ public class LoadBalancer {
     public void addStorage(String storageName) {
         if (!storageNodes.contains(storageName)) {
             storageNodes.add(storageName);
+            healthCheck.registerStorage(storageName);
             System.out.println("LoadBalancer: Added new storage - " + storageName);
         }
     }
@@ -154,6 +195,21 @@ public class LoadBalancer {
     // Retrieves storage count
     public int getStorageCount() {
         return storageNodes.size();
+    }
+    
+    // Retrieves healthy storage locations
+    public List<String> getHealthyStorage() {
+        return healthCheck.getHealthyStorage();
+    }
+    
+    // Retrieves health report
+    public String getHealthReport() {
+        return healthCheck.getHealthReport();
+    }
+    
+    // Runs health check
+    public void runHealthCheck() {
+        healthCheck.checkAllStorage();
     }
 
     // Formats file size
