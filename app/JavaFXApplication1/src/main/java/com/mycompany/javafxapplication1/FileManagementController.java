@@ -8,6 +8,7 @@ import com.mycompany.javafxapplication1.database.FileDAO;
 import com.mycompany.javafxapplication1.database.UserDAO;
 import com.mycompany.javafxapplication1.services.SystemLogger;
 import com.mycompany.javafxapplication1.services.DelaySim;
+import com.mycompany.javafxapplication1.services.PerformanceMetrics;
 
 
 import javafx.collections.FXCollections;
@@ -85,11 +86,15 @@ public class FileManagementController {
     @FXML
     private CheckBox delayCheckbox;
     
+    @FXML
+    private Button metricsBtn;
+    
     // Services
     private FileManager fileManager;
     private LoadBalancer loadBalancer;
     private FileDAO fileDAO;  
     private UserDAO userDAO;
+    private PerformanceMetrics metrics;
     private String currentUsername;
     private boolean viewingOwnFiles = true;
    
@@ -101,6 +106,7 @@ public class FileManagementController {
         loadBalancer = new LoadBalancer();
         fileDAO = new FileDAO();
         userDAO = new UserDAO();
+        metrics = PerformanceMetrics.getInstance();
         
         // Set table columns
         filenameCol.setCellValueFactory(new PropertyValueFactory<>("filename"));
@@ -135,6 +141,10 @@ public class FileManagementController {
     // Operation - Upload
     @FXML
     private void handleUpload(ActionEvent event) {
+        
+        // Start timer
+        long startTime = System.currentTimeMillis();
+        
         try {
             // Allows user to choose a file
             FileChooser fileChooser = new FileChooser();
@@ -205,6 +215,11 @@ public class FileManagementController {
             SystemLogger.logFileUpload(currentUsername, selectedFile.getName(), 
                 selectedFile.length(), chunks.size());
             
+            // Records upload metrics
+            long uploadTime = System.currentTimeMillis() - startTime;
+            metrics.recordUpload(storage, selectedFile.length(), uploadTime);
+            System.out.println("Recorded: " + storage + ", " + uploadTime + "ms");
+            
         } catch (Exception e) {
             e.printStackTrace();
             statusLabel.setText("Upload failed!");
@@ -228,6 +243,8 @@ public class FileManagementController {
     // Operation - Download file
     @FXML
     private void handleDownload(ActionEvent event) {
+        long startTime = System.currentTimeMillis();  // Starts timing
+        
         try {
             // Retrieves selected file from table
             FileInfo selected = filesTable.getSelectionModel().getSelectedItem();
@@ -275,6 +292,11 @@ public class FileManagementController {
             progressBar.setProgress(1.0);
             statusLabel.setText("Download complete: " + selected.getFilename());
             SystemLogger.logFileDownload(currentUsername, selected.getFilename());
+            
+            // Record download metrics
+            long downloadTime = System.currentTimeMillis() - startTime;
+            metrics.recordDownload(downloadTime);
+            System.out.println("Recorded: " + downloadTime + "ms");
             
             showAlert("Success", "File downloaded to: " + saveFile.getAbsolutePath(), Alert.AlertType.INFORMATION);
             
@@ -324,21 +346,32 @@ public class FileManagementController {
         
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
+                
+                // Retrieves storage info prior to deletion
+                List<FileDAO.ChunkInfo> chunkInfos = fileDAO.getFileChunks(selected.getId());
+                String storage = chunkInfos.isEmpty() ? "unknown" : chunkInfos.get(0).storageLocation;
+                
                 // Delete from database
                 fileDAO.deleteFile(selected.getId());
+                
                 
                 // Reloads file list from database
                 loadUserFiles();
                 
                 statusLabel.setText("Deleted: " + selected.getFilename());
                 SystemLogger.logFileDelete(currentUsername, selected.getFilename());
-                showAlert("Success", "File deleted successfully!", Alert.AlertType.INFORMATION);
+                
+                 // Records delete metrics
+                metrics.recordDelete(storage, 0);
+                System.out.println("Recorded: " + storage);
+                
+                showAlert("Success", "File deleted successfully", Alert.AlertType.INFORMATION);
                
                 
                 
             } catch (Exception e) {
                 e.printStackTrace();
-                statusLabel.setText("Delete failed!");
+                statusLabel.setText("Delete failed");
                 showAlert("Error", "Failed to delete file: " + e.getMessage(), Alert.AlertType.ERROR);
             }
         }
@@ -567,6 +600,26 @@ public class FileManagementController {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void handleViewMetrics(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("metricsviewer.fxml"));
+            Parent root = loader.load();
+
+            Stage metricsStage = new Stage();
+            Scene scene = new Scene(root, 700, 600);
+            metricsStage.setScene(scene);
+            metricsStage.setTitle("Performance Metrics");
+            metricsStage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Could not open metrics viewer: " + e.getMessage(), 
+                     Alert.AlertType.ERROR);
         }
     }
 }

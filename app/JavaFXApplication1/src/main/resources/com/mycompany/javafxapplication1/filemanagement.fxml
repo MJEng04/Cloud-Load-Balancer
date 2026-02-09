@@ -35,6 +35,8 @@
                     style="-fx-background-color: #000000; -fx-text-fill: #00ff00;" />
             <Button fx:id="viewLogsBtn" text="View Logs" onAction="#handleViewLogs" 
                     style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+            <Button text="View Metrics" fx:id="metricsBtn" onAction="#handleViewMetrics" 
+                    style="-fx-background-color: #9C27B0; -fx-text-fill: white;"/>
         </HBox>
         
         <!-- Files Table -->

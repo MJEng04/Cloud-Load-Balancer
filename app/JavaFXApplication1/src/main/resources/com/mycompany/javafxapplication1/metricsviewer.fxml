@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.chart.*?>
+
+<VBox spacing="15.0" xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.mycompany.javafxapplication1.MetricsViewerController">
+    
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+    
+    <!-- Header -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Performance Metrics" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Refresh" onAction="#handleRefresh"/>
+        <Button text="Reset Metrics" onAction="#handleReset"/>
+    </HBox>
+    
+    <!-- Metrics Grid -->
+    <GridPane hgap="20" vgap="10">
+        <Label text="Total Uploads:" GridPane.columnIndex="0" GridPane.rowIndex="0" 
+               style="-fx-font-weight: bold;"/>
+        <Label fx:id="uploadsLabel" text="0" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        
+        <Label text="Total Downloads:" GridPane.columnIndex="0" GridPane.rowIndex="1" 
+               style="-fx-font-weight: bold;"/>
+        <Label fx:id="downloadsLabel" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        
+        <Label text="Total Deletes:" GridPane.columnIndex="0" GridPane.rowIndex="2" 
+               style="-fx-font-weight: bold;"/>
+        <Label fx:id="deletesLabel" text="0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        
+        <Label text="Avg Upload Time:" GridPane.columnIndex="0" GridPane.rowIndex="3" 
+               style="-fx-font-weight: bold;"/>
+        <Label fx:id="avgUploadLabel" text="0 ms" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        
+        <Label text="Avg Download Time:" GridPane.columnIndex="0" GridPane.rowIndex="4" 
+               style="-fx-font-weight: bold;"/>
+        <Label fx:id="avgDownloadLabel" text="0 ms" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        
+        <Label text="System Uptime:" GridPane.columnIndex="0" GridPane.rowIndex="5" 
+               style="-fx-font-weight: bold;"/>
+        <Label fx:id="uptimeLabel" text="0 seconds" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+        
+        <Label text="Load Balancer Efficiency:" GridPane.columnIndex="0" GridPane.rowIndex="6" 
+               style="-fx-font-weight: bold;"/>
+        <Label fx:id="efficiencyLabel" text="100%" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+    </GridPane>
+    
+    <!-- Storage Distribution Chart -->
+    <Label text="Storage Distribution" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+    <PieChart fx:id="storageChart" prefHeight="250" prefWidth="500"/>
+    
+    <!-- Detailed Report -->
+    <Label text="Detailed Report" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+    <TextArea fx:id="reportArea" prefHeight="200" editable="false" 
+              style="-fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
+    
+</VBox>
