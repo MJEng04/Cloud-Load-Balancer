@@ -1,51 +1,62 @@
 # Distributed File Storage System
 
-A distributed cloud-based file storage system with a load balancer, built using 
-Java, JavaFX, Docker, and MySQL. Features role-based access, AES encryption, 
-file chunking, and multiple scheduling algorithms.
+A distributed cloud-based file storage system with a load balancer, 
+built using Java, JavaFX, Docker, and MySQL. Features role-based access, 
+AES encryption, 1MB file chunking with CRC32 integrity checking, and 
+multiple scheduling algorithms.
 
 ## Tech Stack
 - **Language:** Java (Maven)
 - **GUI:** JavaFX
 - **Database:** MySQL (Dockerised)
 - **Infrastructure:** Docker & Docker Compose
-- **Security:** AES encryption, PBKDF2 password hashing
+- **Security:** AES-256 encryption, PBKDF2 password hashing with salt
+- **Build:** Maven
 
 ## Features
 
-### Core System
-- User authentication — register and login with hashed passwords (PBKDF2 with salt)
-- Role-based access — Admin and Standard user roles with permission enforcement
-- File upload and download with automatic 1MB chunking and CRC32 integrity checking
-- AES encryption of file chunks before storage, decryption on download
-- Cross-session persistence — files remain after application restart
+### File Management
+- Upload and download files of any size
+- Automatic 1MB file chunking with CRC32 integrity validation
+- AES-256 encryption of all chunks before storage
+- Decryption on download — transparent to the user
+- Cross-session persistence — files survive application restarts
 
 ### Load Balancer
-- Round Robin scheduling across multiple storage nodes
-- Multiple scheduling algorithms supported
-- Health checks — only healthy storage nodes receive traffic
-- Artificial delay simulation to emulate real-world cloud latency
-- Performance metrics tracking — upload/download times, storage distribution, efficiency reports
+- Distributes file chunks evenly across multiple storage nodes
+- Multiple scheduling algorithms — Round Robin, FCFS, Priority, 
+  Shortest Job Next, Round Robin, and Multiple-Level Queues
+- Health checks — automatically excludes unhealthy storage nodes
+- Artificial delay simulation (30-90 seconds) to emulate real cloud latency
+- Performance metrics — tracks upload/download times, storage distribution, 
+  and load balancer efficiency
 
-### Additional Features
+### User System
+- Register and login with PBKDF2 hashed passwords and salt
+- Role-based access — Admin and Standard users
 - File sharing between users with read/write permission controls
-- Terminal command interface within the application
+- Access control lists enforced on all file operations
+
+### Interface
 - JavaFX GUI for full file management
-- Docker Compose orchestration with persistent volumes
+- Built-in terminal command interface
+- Supported commands: mv, cp, ls, mkdir, ps, whoami, tree, nano
+- Log viewer and metrics dashboard
 
 ## Architecture
-┌─────────────────────────────────┐
-│     JavaFX GUI Application      │
-├─────────────────────────────────┤
-│         Load Balancer           │
-│   (scheduling + health checks)  │
-├───────────────┬─────────────────┤
-│  File Server  │  File Server 2  │
-│    Node 1     │                 │
-├───────────────┴─────────────────┤
-│         MySQL Database          │
-│      (Docker containerised)     │
-└─────────────────────────────────┘
+┌─────────────────────────────────────┐
+│        JavaFX GUI Application        │
+│    (File Management + Terminal)      │
+├─────────────────────────────────────┤
+│           Load Balancer              │
+│  (Scheduling + Health Checks)        │
+├──────────────────┬──────────────────┤
+│  File Storage    │  File Storage    │
+│    Node 1        │    Node 2        │
+├──────────────────┴──────────────────┤
+│         MySQL Database               │
+│      (Docker containerised)          │
+└─────────────────────────────────────┘
 
 ## How to Run
 
@@ -69,24 +80,28 @@ mvn clean install
 mvn javafx:run
 ```
 
-**Default credentials:**
-- Admin account is created on first run
-- See `database-schema.sql` for database structure
+See `docker_database.sql` for the full database schema.
 
 ## Project Structure
 cloud-load-balancer/
 ├── app/
-│   └── src/
-│       ├── main/java/
-│       │   ├── controllers/
-│       │   ├── dao/
-│       │   ├── models/
-│       │   └── services/
-│       └── resources/
+│   └── JavaFXApplication1/
+│       ├── src/main/java/com/mycompany/javafxapplication1/
+│       │   ├── database/      # DAO classes and DB connection
+│       │   ├── models/        # User, File, Chunk entities
+│       │   ├── services/      # Load balancer, encryption, file services
+│       │   ├── FileManagementController.java
+│       │   ├── TerminalController.java
+│       │   ├── MetricsViewerController.java
+│       │   └── App.java
+│       ├── src/main/resources/  # FXML layout files
+│       ├── docker-compose.yml
+│       └── pom.xml
 ├── database-schema.sql
 └── README.md
 
 ## Development Timeline
-Built across 10 days covering core file system, database integration, 
-user roles, security, terminal interface, load balancer improvements, 
-Docker integration, health checking, delay simulation, and performance metrics.
+Built across 10 days — core file system, MySQL integration, user roles 
+and file sharing, AES encryption and password hashing, terminal command 
+interface, load balancer scheduling algorithms, Docker containerisation, 
+health checking, artificial delay simulation, and performance metrics.
