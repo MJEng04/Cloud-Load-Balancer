@@ -147,22 +147,34 @@ mvn javafx:run
 See `docker_database.sql` for the full database schema.
 
 ## Project Structure
+```
 cloud-load-balancer/
 ├── app/
 │   └── JavaFXApplication1/
 │       ├── src/main/java/com/mycompany/javafxapplication1/
-│       │   ├── database/      # DAO classes and DB connection
-│       │   ├── models/        # User, File, Chunk entities
-│       │   ├── services/      # Load balancer, encryption, file services
+│       │   ├── database/
+│       │   ├── models/
+│       │   ├── services/
 │       │   ├── FileManagementController.java
 │       │   ├── TerminalController.java
 │       │   ├── MetricsViewerController.java
+│       │   ├── LogViewerController.java
+│       │   ├── PrimaryController.java
+│       │   ├── RegisterController.java
 │       │   └── App.java
-│       ├── src/main/resources/  # FXML layout files
+│       ├── src/main/resources/
+│       │   ├── filemanagement.fxml
+│       │   ├── terminal.fxml
+│       │   ├── metricsviewer.fxml
+│       │   ├── logviewer.fxml
+│       │   ├── primary.fxml
+│       │   ├── register.fxml
+│       │   └── secondary.fxml
 │       ├── docker-compose.yml
 │       └── pom.xml
 ├── database-schema.sql
 └── README.md
+```
 
 ## Development Timeline
 Built across 10 days — core file system, MySQL integration, user roles 
