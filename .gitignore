@@ -32,3 +32,17 @@ app/JavaFXApplication1/comp20081.db
 *.db
 *.db
 *.pptx
+
+# Cryptographic files
+.salt
+app/JavaFXApplication1/.salt
+
+# Generated Maven files
+dependency-reduced-pom.xml
+
+# NetBeans
+nbactions.xml
+nb-configuration.xml
+
+# Student number references (renamed versions kept)
+n1264601_dkrdb.sql

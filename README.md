@@ -1,91 +1,92 @@
-# Load-Balancer-CWK
-COMP20081 Systems Software CWK
+# Distributed File Storage System
 
-Implementation and Validation of a Cloud Load Balancer
+A distributed cloud-based file storage system with a load balancer, built using 
+Java, JavaFX, Docker, and MySQL. Features role-based access, AES encryption, 
+file chunking, and multiple scheduling algorithms.
 
-# Desc
-This project implements a distributed cloud-based file storage system with a load balancer,
-developed as part of the COMP20081 Systems Software coursework.
+## Tech Stack
+- **Language:** Java (Maven)
+- **GUI:** JavaFX
+- **Database:** MySQL (Dockerised)
+- **Infrastructure:** Docker & Docker Compose
+- **Security:** AES encryption, PBKDF2 password hashing
 
-# Key Features
-- User Authentication (Register/Login via MySQL)
-- Role-based Users (Admin / Standard)
-- File Upload & Download
-- 1MB File Chunking with CRC32 integrity checking
-- Round Robin Load Balancer across multiple storage nodes
-- Persistent Storage using MySQL
-- JavaFX GUI for file management
-- Cross-session Persistence (files remain after restart)
+## Features
 
-# Technologies
-- Java (Maven)
-- JavaFX
-- Docker & Docker Compose
-- MySQL
+### Core System
+- User authentication — register and login with hashed passwords (PBKDF2 with salt)
+- Role-based access — Admin and Standard user roles with permission enforcement
+- File upload and download with automatic 1MB chunking and CRC32 integrity checking
+- AES encryption of file chunks before storage, decryption on download
+- Cross-session persistence — files remain after application restart
 
-#  Development Progress
-**Day 1 – Core File System**
-- Implemented file upload and download functionality
-- Files
-    - split into smaller chunks for storage
-    - distributed evenly across multiple storage folders
-    - can be reconstructed correctly after download
+### Load Balancer
+- Round Robin scheduling across multiple storage nodes
+- Multiple scheduling algorithms supported
+- Health checks — only healthy storage nodes receive traffic
+- Artificial delay simulation to emulate real-world cloud latency
+- Performance metrics tracking — upload/download times, storage distribution, efficiency reports
 
-**Day 2 – Database & GUI Integration**
-- Connected the application to a MySQL database
-- User login and registration now use MySQL
-- File information is saved to the database and persists after restart
-- Integrated database-backed file management into the JavaFX GUI
+### Additional Features
+- File sharing between users with read/write permission controls
+- Terminal command interface within the application
+- JavaFX GUI for full file management
+- Docker Compose orchestration with persistent volumes
 
-**Day 3 – User Roles & File Sharing**
-- Added file sharing between users
-- Added read and write access controls
-- Added a share dialog to select users and permissions
-- Added a toggle to switch between My Files and Shared Files
-- System checks user permissions before allowing file actions
-- Updated FileDAO to support file sharing
-- Updated UserDAO to support user management
-- Applied access checks in FileManagementController
+## Architecture
+┌─────────────────────────────────┐
+│     JavaFX GUI Application      │
+├─────────────────────────────────┤
+│         Load Balancer           │
+│   (scheduling + health checks)  │
+├───────────────┬─────────────────┤
+│  File Server  │  File Server 2  │
+│    Node 1     │                 │
+├───────────────┴─────────────────┤
+│         MySQL Database          │
+│      (Docker containerised)     │
+└─────────────────────────────────┘
 
-**Day 4 – Security & Cleanup**
-- Added password hashing using PBKDF2 (with salt)
-- Implemented AES encryption for file chunks before storage
-- Files now stored encrypted on disk and decrypted on download
-- Removed old SQLite database code
-- Updated app startup to use MySQL only
-- Fixed NetBeans crashes caused by multiple database initialisations
+## How to Run
 
-**Day 5 – Terminal Command Interface**
-- Introduced a terminal command interface within the application
-- Added command validation for user input
-- Implemented file management commands
-- Added formatted output for file listings
-- Added help command to display supported commands
-- Added error messages for invalid commands and permissions
+**Prerequisites:**
+- Java 20+
+- Maven
+- Docker Desktop
 
-**Day 6 – Load Balancer Improvements**
-- Updated the load balancer to support multiple scheduling algorithms
-- Updated chunk distribution to work across all algorithms
+**Step 1 — Start the database:**
+```bash
+docker-compose up -d
+```
 
-**Day 7 – Docker Integration**
-- Containerised MySQL database using Docker Compose
-- Implemented persistent volumes for database and storage locations
-- Mapped MySQL on port 3307 for JavaFX integration
-- Verified database connectivity to JavaFX application
+**Step 2 — Build the project:**
+```bash
+mvn clean install
+```
 
-**Day 8 – Health Checking**
-- Implemented storage health checks to validate storage availability
-- Added existence and accessibility checks for storage locations
-- Integrated health checks with load balancer storage selector
-- Ensured only healthy storage locations are used for file operations
+**Step 3 — Run the application:**
+```bash
+mvn javafx:run
+```
 
-**Day 9 – Artificial Delay Simulation**
-- Implemented artificial delays to simulate real-world cloud behaviour
-- Added delays to upload, download, and delete operations
+**Default credentials:**
+- Admin account is created on first run
+- See `database-schema.sql` for database structure
 
-**Day 10 – Performance Metrics & Monitoring**
-- Added runtime performance metrics tracking
-- Implemented operation timing for uploads and downloads
-- Tracked total uploads, downloads, and deletes
-- Recorded storage distribution and load balancer efficiency
-- Added metrics reports for monitoring and validation
+## Project Structure
+cloud-load-balancer/
+├── app/
+│   └── src/
+│       ├── main/java/
+│       │   ├── controllers/
+│       │   ├── dao/
+│       │   ├── models/
+│       │   └── services/
+│       └── resources/
+├── database-schema.sql
+└── README.md
+
+## Development Timeline
+Built across 10 days covering core file system, database integration, 
+user roles, security, terminal interface, load balancer improvements, 
+Docker integration, health checking, delay simulation, and performance metrics.
