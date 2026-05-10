@@ -44,6 +44,24 @@ multiple scheduling algorithms.
 - Log viewer and metrics dashboard
 
 ## Architecture
+The system is built around a clear class structure separating concerns:
+
+| Class | Responsibility |
+|---|---|
+| `FileManagementController` | Main GUI controller for all file operations |
+| `TerminalController` | Handles terminal command input and execution |
+| `MetricsViewerController` | Displays load balancer performance metrics |
+| `LogViewerController` | Displays system and operation logs |
+| `PrimaryController` | Login and authentication interface |
+| `RegisterController` | New user registration interface |
+| `LoadBalancerService` | Distributes chunks across storage nodes using scheduling algorithms |
+| `EncryptionService` | AES-256 encryption and decryption of file chunks |
+| `FileService` | File chunking, reconstruction, and CRC32 validation |
+| `UserDAO` | Database operations for user management |
+| `FileDAO` | Database operations for file metadata and sharing |
+| `AppUser` | User entity with role and permission data |
+| `FileModel` | File entity with chunk references and metadata |
+
 # Distributed File Storage System
 
 A distributed cloud-based file storage system with a load balancer, 
